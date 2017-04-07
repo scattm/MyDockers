@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  db:
+    image: "postgres:9.4-alpine"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: "drupal"
+      POSTGRES_PASSWORD: "drupal"
+
+  fpm:
+    build: ./fpm
+    volumes:
+      - ./app:/app
+      - ./fpm/fpm.sh:/fpm.sh
+    command: /bin/sh /fpm.sh
+    depends_on:
+      - db
+
+  httpd:
+    build: ./httpd
+    volumes:
+      - ./app:/app
+      - ./httpd/conf:/usr/local/apache2/conf/custom:ro
+    ports:
+      - 80:81
+    depends_on:
+      - fpm
